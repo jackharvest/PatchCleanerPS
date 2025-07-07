@@ -72,7 +72,7 @@ if($Interactive){
     # Inform user about headless switches
     Write-Host 'Headless usage examples:' -ForegroundColor Cyan
     Write-Host '  powershell -File PatchCleanerScript.ps1 -Auto        # Live run. Default Acrobat filter' -ForegroundColor White
-    Write-Host '  powershell -File PatchCleanerScript.ps1 -AutoAll     # Live run. NO vendor filter (aggressive)' -ForegroundColor White
+    Write-Host '  powershell -File PatchCleanerScript.ps1 -AutoAll     # Live run. NO vendor filter (!)' -ForegroundColor White
     Write-Host '  powershell -File PatchCleanerScript.ps1 -AutoDry     # Dry-run. Default Acrobat filter' -ForegroundColor White
     Write-Host '  powershell -File PatchCleanerScript.ps1 -AutoDryAll  # Dry-run. NO vendor filter' -ForegroundColor White
     Write-Host ''
