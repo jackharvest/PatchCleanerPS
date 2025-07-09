@@ -110,3 +110,69 @@ See the LICENSE file for details.
 
 ## $\textcolor{yellow}{\text{Changelog}}$
 Changes can be found in the releases section on the right.
+
+# $\textcolor{Cyan}{\text{Advanced Headless Usage Via Remote Powershell Script}}$
+Let's say you wanted to utilize the "Scripts" section of SCCM for headless deployment. Below, you'll find an example of a highly dynamic script that auto downloads the latest release from github, stores it in a temporary location, performs a harsh -AutoDryAll, and returns the output.
+
+```
+# PowerShell script to fetch and run the latest PatchCleanerPS.exe in dry-run mode
+# Safe for use in SCCM/Intune "Scripts" section — output is returned via stdout
+
+$repoOwner = "jackharvest"
+$repoName = "PatchCleanerPS"
+$exeName = "PatchCleanerPS.exe"
+$tempDir = "$env:ProgramData\PatchCleanerPS"
+$exePath = Join-Path $tempDir $exeName
+
+# Ensure temp directory exists
+if (-not (Test-Path $tempDir)) {
+    New-Item -ItemType Directory -Path $tempDir -Force | Out-Null
+}
+
+try {
+    Write-Output "Checking GitHub API for latest release..."
+    $releaseInfo = Invoke-RestMethod -Uri "https://api.github.com/repos/$repoOwner/$repoName/releases/latest" -Headers @{ "User-Agent" = "PatchCleanerPS-Agent" }
+
+    $asset = $releaseInfo.assets | Where-Object { $_.name -eq $exeName }
+    if (-not $asset) {
+        throw "Could not find $exeName in latest GitHub release."
+    }
+
+    $downloadUrl = $asset.browser_download_url
+    Write-Output "Downloading latest $exeName from: $downloadUrl"
+
+    Invoke-WebRequest -Uri $downloadUrl -OutFile $exePath -UseBasicParsing
+
+    if (-not (Test-Path $exePath)) {
+        throw "Download failed or $exePath not found."
+    }
+
+    Write-Output "Running PatchCleanerPS in dry-run mode..."
+    
+    $processInfo = New-Object System.Diagnostics.ProcessStartInfo
+    $processInfo.FileName = $exePath
+    $processInfo.Arguments = "-AutoDryAll"
+    $processInfo.RedirectStandardOutput = $true
+    $processInfo.UseShellExecute = $false
+    $processInfo.CreateNoWindow = $true
+
+    $process = New-Object System.Diagnostics.Process
+    $process.StartInfo = $processInfo
+    $process.Start() | Out-Null
+
+    $stdout = $process.StandardOutput.ReadToEnd()
+    $process.WaitForExit()
+
+    Write-Output "---- PatchCleanerPS Output ----"
+    Write-Output $stdout.Trim()
+    Write-Output "--------------------------------"
+
+} catch {
+    Write-Error "ERROR: $($_.Exception.Message)"
+    exit 1
+}
+```
+
+In this scenario, running it against a single machine in SCCM would yield something like this:
+![image](https://github.com/user-attachments/assets/98d985ea-c2bb-43f5-9cb6-bdf55eb031c0)
+
