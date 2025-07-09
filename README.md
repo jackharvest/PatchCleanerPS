@@ -40,9 +40,13 @@ Invoke-WebRequest -Uri "https://github.com/jackharvest/PatchCleanerPS/raw/main/p
 ## $\textcolor{yellow}{\text{Running It}}$
 ### $\textcolor{cyan}{\text{Interactive Mode}}$
 .\PatchCleanerPS.ps1
+or
+PatchCleanerPS.exe
 
 ## $\textcolor{yellow}{\text{Automatic mode (skips prompts)}}$
 .\PatchCleanerPS.ps1 -Auto
+or
+PatchCleanerPS.exe -Auto
 
 ## Supported Parameters
 | Parameter         | Description                                                      |
